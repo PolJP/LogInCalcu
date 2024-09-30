@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JP's Calculator</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        .calculator {
+            width: 320px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            background-color: white;
+        }
+
+        .display {
+            background-color: #333;
+            color: white;
+            font-size: 2em;
+            text-align: right;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+        }
+
+        .btn {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .btn.operator {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn.number {
+            background-color: #ffffff;
+        }
+
+        .btn:active {
+            background-color: #ddd;
+        }
+
+        .btn.operator:active {
+            background-color: #f5c6cb;
+        }
+
+        .btn.equals {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn.equals:active {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button class="btn operator" data-action="clear">C</button>
+            <button class="btn operator" data-action="plus-minus">±</button>
+            <button class="btn operator" data-action="percent">%</button>
+            <button class="btn operator" data-action="divide">÷</button>
+            <button class="btn number">7</button>
+            <button class="btn number">8</button>
+            <button class="btn number">9</button>
+            <button class="btn operator" data-action="multiply">×</button>
+            <button class="btn number">4</button>
+            <button class="btn number">5</button>
+            <button class="btn number">6</button>
+            <button class="btn operator" data-action="subtract">−</button>
+            <button class="btn number">1</button>
+            <button class="btn number">2</button>
+            <button class="btn number">3</button>
+            <button class="btn operator" data-action="add">+</button>
+            <button class="btn number" data-action="zero">0</button>
+            <button class="btn number">.</button>
+            <button class="btn operator equals" data-action="equals">=</button>
+        </div>
+    </div>
+    <script>
+        const display = document.getElementById('display');
+        let currentInput = '';
+        let operator = '';
+        let previousValue = '';
+
+        function updateDisplay(value) {
+            display.innerText = value || '0';
+        }
+
+        function calculate(a, b, op) {
+            a = parseFloat(a);
+            b = parseFloat(b);
+            switch (op) {
+                case '+': return a + b;
+                case '-': return a - b;
+                case '×': return a * b;
+                case '÷': return b !== 0 ? a / b : 'Error';
+                default: return b;
+            }
+        }
+
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const value = button.innerText;
+                const action = button.dataset.action;
+
+                if (button.classList.contains('number')) {
+                    currentInput = (currentInput === '0' ? value : currentInput + value);
+                    updateDisplay(currentInput);
+                } else if (action) {
+                    switch (action) {
+                        case 'clear':
+                            currentInput = '';
+                            operator = '';
+                            previousValue = '';
+                            updateDisplay();
+                            break;
+                        case 'plus-minus':
+                            currentInput = currentInput.startsWith('-') ? currentInput.slice(1) : `-${currentInput}`;
+                            updateDisplay(currentInput);
+                            break;
+                        case 'percent':
+                            currentInput = (parseFloat(currentInput) / 100).toString();
+                            updateDisplay(currentInput);
+                            break;
+                        case 'equals':
+                            if (operator && previousValue) {
+                                let result = calculate(previousValue, currentInput, operator);
+                                currentInput = result === 'Error' ? 'Error' : result.toString();
+                                updateDisplay(currentInput);
+                                previousValue = '';
+                                operator = '';
+                            }
+                            break;
+                        default:
+                            if (operator) {
+                                previousValue = calculate(previousValue, currentInput, operator);
+                                if (previousValue === 'Error') {
+                                    currentInput = 'Error';
+                                    operator = '';
+                                } else {
+                                    previousValue = previousValue.toString();
+                                    currentInput = '';
+                                }
+                            } else {
+                                previousValue = currentInput;
+                                currentInput = '';
+                            }
+                            operator = value;
+                            break;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
